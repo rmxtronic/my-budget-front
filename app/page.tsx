@@ -86,7 +86,7 @@ export default function Home() {
     try {
       setLoading(true);
       const res = await fetch(
-        `http://localhost:8080/ingresos/fijos?page=${pageNumber}&size=5`
+        `${process.env.NEXT_PUBLIC_API_URL}/ingresos/fijos?page=${pageNumber}&size=5`
       );
       const data: PageResponse<any> = await res.json();
 
@@ -124,14 +124,14 @@ export default function Home() {
 
     try {
       if (editandoId) {
-        await fetch(`http://localhost:8080/ingresos/fijos/${editandoId}`, {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ingresos/fijos/${editandoId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(ingresoData),
         });
         showToast("Ingreso atualizado!", "success");
       } else {
-        await fetch("http://localhost:8080/ingresos/fijos", {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ingresos/fijos`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(ingresoData),
@@ -154,7 +154,7 @@ export default function Home() {
     setDeletingId(id);
     await new Promise((r) => setTimeout(r, 300));
     try {
-      await fetch(`http://localhost:8080/ingresos/fijos/${id}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ingresos/fijos/${id}`, {
         method: "DELETE",
       });
       showToast("Ingreso eliminado", "success");
