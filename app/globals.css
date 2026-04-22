@@ -292,3 +292,32 @@ body {
 .count-animate {
   animation: countUp 0.5s ease forwards;
 }
+
+/* Select (dropdown) */
+.select-glass {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: white;
+  border-radius: 10px;
+  padding: 10px 14px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.select-glass:focus {
+  border-color: rgba(139, 92, 246, 0.7);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+.select-glass option {
+  background: #1a1a2e;
+  color: white;
+}
+
+/* Hide scrollbar on nav */
+nav::-webkit-scrollbar {
+  display: none;
+}
