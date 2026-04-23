@@ -265,7 +265,7 @@ export default function EgresosCategorias() {
                     </span>
                   </div>
                   <p style={{ fontSize: "1.1rem", fontWeight: 700, color: "#f472b6" }}>
-                    ${cat.montoPresupuestado.toLocaleString()}
+                    ${(cat.montoPresupuestado ?? 0).toLocaleString()}
                   </p>
                 </div>
               </div>
