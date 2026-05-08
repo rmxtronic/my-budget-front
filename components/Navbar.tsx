@@ -1,78 +1,118 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, useRef, useEffect } from "react";
 
-const links = [
-  { href: "/", label: "Dashboard", icon: "📊" },
+const ingresosLinks = [
   { href: "/ingresos/fijos", label: "Ingresos Fijos", icon: "💵" },
   { href: "/ingresos/variables", label: "Ingresos Variables", icon: "📈" },
+];
+
+const mainLinks = [
   { href: "/egresos/categorias", label: "Categorías", icon: "🗂️" },
   { href: "/egresos/detalle", label: "Gastos", icon: "💸" },
-  // TODO: cuando implementes auth, añade aquí el avatar/botón de logout
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
+  const [ingresosOpen, setIngresosOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const isIngresosActive = ingresosLinks.some((l) => pathname === l.href);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIngresosOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
-    <nav
-      style={{
-        position: "sticky",
-        top: 0,
-        zIndex: 100,
-        background: "rgba(15, 12, 41, 0.92)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(255,255,255,0.08)",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: 1100,
-          margin: "0 auto",
-          padding: "0 16px",
-          display: "flex",
-          alignItems: "center",
-          gap: 4,
-          overflowX: "auto",
-          scrollbarWidth: "none",
-        }}
-      >
-        <span
-          style={{
-            fontWeight: 700,
-            fontSize: "1rem",
-            color: "white",
-            paddingRight: 16,
-            borderRight: "1px solid rgba(255,255,255,0.1)",
-            marginRight: 4,
-            whiteSpace: "nowrap",
-            flexShrink: 0,
-          }}
+    <nav className="sticky top-0 z-[100] border-b border-white/[0.08] backdrop-blur-[20px] bg-[rgba(15,12,41,0.92)]">
+      <div className="max-w-[1100px] mx-auto px-4 flex items-center gap-1">
+        {/* Logo -> Dashboard */}
+        <Link
+          href="/"
+          className={`
+            flex items-center gap-2 pr-4 mr-2 border-r border-white/10
+            font-bold text-base whitespace-nowrap shrink-0
+            min-h-[48px] transition-colors
+            ${pathname === "/" ? "text-violet-400" : "text-white hover:text-violet-300"}
+          `}
         >
-          💰 My Budget
-        </span>
+          💰 HogarBudget
+        </Link>
 
-        {links.map((link) => {
+        {/* Dropdown: Ingresos */}
+        <div ref={dropdownRef} className="relative shrink-0">
+          <button
+            onClick={() => setIngresosOpen((v) => !v)}
+            className={`
+              flex items-center gap-1.5 px-3 min-h-[48px] text-sm
+              border-b-2 whitespace-nowrap transition-colors cursor-pointer
+              ${isIngresosActive
+                ? "font-semibold text-violet-400 border-violet-400"
+                : "font-normal text-white/50 border-transparent hover:text-white/80"
+              }
+            `}
+          >
+            <span>💰</span>
+            Ingresos
+            <svg
+              className={`w-3.5 h-3.5 ml-0.5 transition-transform ${ingresosOpen ? "rotate-180" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {ingresosOpen && (
+            <div className="absolute top-full left-0 mt-1 min-w-[200px] rounded-lg bg-[rgba(15,12,41,0.97)] border border-white/10 shadow-xl py-1 z-50">
+              {ingresosLinks.map((link) => {
+                const isActive = pathname === link.href;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setIngresosOpen(false)}
+                    className={`
+                      flex items-center gap-2 px-4 min-h-[44px] text-sm
+                      transition-colors
+                      ${isActive
+                        ? "font-semibold text-violet-400 bg-white/5"
+                        : "text-white/60 hover:text-white hover:bg-white/5"
+                      }
+                    `}
+                  >
+                    <span>{link.icon}</span>
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Main links: Categorías, Gastos */}
+        {mainLinks.map((link) => {
           const isActive = pathname === link.href;
           return (
             <Link
               key={link.href}
               href={link.href}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "14px 10px",
-                fontSize: "0.85rem",
-                fontWeight: isActive ? 600 : 400,
-                color: isActive ? "#a78bfa" : "rgba(255,255,255,0.5)",
-                borderBottom: `2px solid ${isActive ? "#a78bfa" : "transparent"}`,
-                textDecoration: "none",
-                whiteSpace: "nowrap",
-                transition: "color 0.2s",
-                flexShrink: 0,
-              }}
+              className={`
+                flex items-center gap-1.5 px-3 min-h-[48px] text-sm
+                border-b-2 whitespace-nowrap transition-colors shrink-0
+                ${isActive
+                  ? "font-semibold text-violet-400 border-violet-400"
+                  : "font-normal text-white/50 border-transparent hover:text-white/80"
+                }
+              `}
             >
               <span>{link.icon}</span>
               {link.label}
