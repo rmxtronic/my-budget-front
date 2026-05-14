@@ -2,15 +2,23 @@
 
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
-import type { SumCategoria } from "../lib/types";
+import type { SumCategoria, EgresoCategoria } from "../lib/types";
 import { useToast, ToastContainer } from "../components/useToast";
 import { useAnimatedNumber } from "../lib/useAnimatedNumber";
+
+function barColor(pct: number): string {
+  if (pct >= 90) return "#ef4444";
+  if (pct >= 60) return "#fb923c";
+  if (pct >= 30) return "#fbbf24";
+  return "#10b981";
+}
 
 export default function Dashboard() {
   const [totalFijos, setTotalFijos] = useState(0);
   const [totalVariables, setTotalVariables] = useState(0);
   const [totalPresupuestado, setTotalPresupuestado] = useState(0);
   const [categorias, setCategorias] = useState<SumCategoria[]>([]);
+  const [presupuestos, setPresupuestos] = useState<EgresoCategoria[]>([]);
   const [loading, setLoading] = useState(true);
   const { toasts, showToast } = useToast();
 
@@ -27,16 +35,18 @@ export default function Dashboard() {
   useEffect(() => {
     async function load() {
       try {
-        const [fijos, variables, presupuestado, cats] = await Promise.all([
+        const [fijos, variables, presupuestado, cats, presup] = await Promise.all([
           api.get<number>("/ingresos/fijos/total"),
           api.get<number>("/ingresos/variables/total"),
           api.get<number>("/egreso/categorias/total-presupuestado"),
           api.get<SumCategoria[]>("/egreso/detalle/actual"),
+          api.get<EgresoCategoria[]>("/egreso/categorias"),
         ]);
         setTotalFijos(fijos ?? 0);
         setTotalVariables(variables ?? 0);
         setTotalPresupuestado(presupuestado ?? 0);
         setCategorias(cats ?? []);
+        setPresupuestos(presup ?? []);
       } catch {
         showToast("Error al cargar el dashboard", "error");
       } finally {
@@ -125,8 +135,15 @@ export default function Dashboard() {
           </h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {categorias.map((cat) => {
-              const maxSuma = Math.max(...categorias.map((c) => c.totalMonto ?? 0), 1);
-              const pct = ((cat.totalMonto ?? 0) / maxSuma) * 100;
+              const budget = presupuestos.find((b) => b.nombreCategoria === cat.nombreCategoria);
+              const presupuestado = budget?.montoPresupuestado ?? 0;
+              const gastado = cat.totalMonto ?? 0;
+              const pct = presupuestado > 0 ? (gastado / presupuestado) * 100 : 0;
+              const fillPct = Math.min(pct, 100);
+              const color = barColor(pct);
+              const overBudget = pct >= 100;
+              const excedido = Math.max(0, gastado - presupuestado);
+              const saldoCat = presupuestado - gastado;
               return (
                 <div key={cat.nombreCategoria}>
                   <div
@@ -139,8 +156,9 @@ export default function Dashboard() {
                     <span style={{ fontSize: "0.9rem", color: "rgba(255,255,255,0.8)" }}>
                       {cat.nombreCategoria}
                     </span>
-                    <span style={{ fontSize: "0.9rem", fontWeight: 700, color: "#f472b6" }}>
-                      ${(cat.totalMonto ?? 0).toLocaleString()}
+                    <span style={{ fontSize: "0.9rem", fontWeight: 700, color: "rgba(255,255,255,0.9)" }}>
+                      ${gastado.toLocaleString()}
+                      <span style={{ color: "rgba(255,255,255,0.4)", fontWeight: 400 }}> / ${presupuestado.toLocaleString()}</span>
                     </span>
                   </div>
                   <div
@@ -154,11 +172,25 @@ export default function Dashboard() {
                       style={{
                         height: "100%",
                         borderRadius: 3,
-                        width: `${pct}%`,
-                        background: "linear-gradient(90deg, #ec4899, #f472b6)",
-                        transition: "width 0.6s ease",
+                        width: `${fillPct}%`,
+                        background: color,
+                        transition: "width 0.6s ease, background 0.3s ease",
                       }}
                     />
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 4,
+                      fontSize: "0.75rem",
+                      textAlign: "right",
+                      color: overBudget ? "#ef4444" : "rgba(255,255,255,0.45)",
+                    }}
+                  >
+                    {presupuestado === 0
+                      ? "Sin presupuesto definido"
+                      : overBudget
+                        ? `Excedido por $${excedido.toLocaleString()} (${Math.round(pct)}%)`
+                        : `${Math.round(pct)}% — Saldo: $${saldoCat.toLocaleString()}`}
                   </div>
                 </div>
               );

@@ -5,6 +5,13 @@ import { api } from "../../../lib/api";
 import type { EgresoCategoria, EgresoDetalle, SumCategoria } from "../../../lib/types";
 import { useToast, ToastContainer } from "../../../components/useToast";
 
+function barColor(pct: number): string {
+  if (pct >= 90) return "#ef4444";
+  if (pct >= 60) return "#fb923c";
+  if (pct >= 30) return "#fbbf24";
+  return "#10b981";
+}
+
 export default function EgresosDetallePage() {
   const [detalles, setDetalles] = useState<EgresoDetalle[]>([]);
   const [categorias, setCategorias] = useState<EgresoCategoria[]>([]);
@@ -139,16 +146,24 @@ export default function EgresosDetallePage() {
           </h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {resumen.map((cat) => {
-              const maxSuma = Math.max(...resumen.map((c) => c.totalMonto ?? 0), 1);
-              const pct = ((cat.totalMonto ?? 0) / maxSuma) * 100;
+              const budget = categorias.find((b) => b.nombreCategoria === cat.nombreCategoria);
+              const presupuestado = budget?.montoPresupuestado ?? 0;
+              const gastado = cat.totalMonto ?? 0;
+              const pct = presupuestado > 0 ? (gastado / presupuestado) * 100 : 0;
+              const fillPct = Math.min(pct, 100);
+              const color = barColor(pct);
+              const overBudget = pct >= 100;
+              const excedido = Math.max(0, gastado - presupuestado);
+              const saldoCat = presupuestado - gastado;
               return (
                 <div key={cat.nombreCategoria}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                     <span style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.7)" }}>
                       {cat.nombreCategoria}
                     </span>
-                    <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#fb923c" }}>
-                      ${(cat.totalMonto ?? 0).toLocaleString()}
+                    <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "rgba(255,255,255,0.9)" }}>
+                      ${gastado.toLocaleString()}
+                      <span style={{ color: "rgba(255,255,255,0.4)", fontWeight: 400 }}> / ${presupuestado.toLocaleString()}</span>
                     </span>
                   </div>
                   <div style={{ height: 5, borderRadius: 3, background: "rgba(255,255,255,0.08)" }}>
@@ -156,11 +171,25 @@ export default function EgresosDetallePage() {
                       style={{
                         height: "100%",
                         borderRadius: 3,
-                        width: `${pct}%`,
-                        background: "linear-gradient(90deg, #f97316, #fb923c)",
-                        transition: "width 0.6s ease",
+                        width: `${fillPct}%`,
+                        background: color,
+                        transition: "width 0.6s ease, background 0.3s ease",
                       }}
                     />
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 3,
+                      fontSize: "0.7rem",
+                      textAlign: "right",
+                      color: overBudget ? "#ef4444" : "rgba(255,255,255,0.45)",
+                    }}
+                  >
+                    {presupuestado === 0
+                      ? "Sin presupuesto definido"
+                      : overBudget
+                        ? `Excedido por $${excedido.toLocaleString()} (${Math.round(pct)}%)`
+                        : `${Math.round(pct)}% — Saldo: $${saldoCat.toLocaleString()}`}
                   </div>
                 </div>
               );
