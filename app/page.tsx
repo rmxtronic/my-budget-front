@@ -15,7 +15,7 @@ export default function Dashboard() {
   const { toasts, showToast } = useToast();
 
   const totalIngresos = totalFijos + totalVariables;
-  const gastosReales = categorias.reduce((sum, c) => sum + (c.suma ?? 0), 0);
+  const gastosReales = categorias.reduce((sum, c) => sum + (c.totalMonto ?? 0), 0);
   const saldo = totalIngresos - gastosReales;
 
   const animFijos = useAnimatedNumber(totalFijos);
@@ -125,8 +125,8 @@ export default function Dashboard() {
           </h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {categorias.map((cat) => {
-              const maxSuma = Math.max(...categorias.map((c) => c.suma ?? 0), 1);
-              const pct = ((cat.suma ?? 0) / maxSuma) * 100;
+              const maxSuma = Math.max(...categorias.map((c) => c.totalMonto ?? 0), 1);
+              const pct = ((cat.totalMonto ?? 0) / maxSuma) * 100;
               return (
                 <div key={cat.nombreCategoria}>
                   <div
@@ -140,7 +140,7 @@ export default function Dashboard() {
                       {cat.nombreCategoria}
                     </span>
                     <span style={{ fontSize: "0.9rem", fontWeight: 700, color: "#f472b6" }}>
-                      ${(cat.suma ?? 0).toLocaleString()}
+                      ${(cat.totalMonto ?? 0).toLocaleString()}
                     </span>
                   </div>
                   <div

@@ -20,7 +20,7 @@ export default function EgresosDetallePage() {
 
   const { toasts, showToast } = useToast();
 
-  const totalGastos = resumen.reduce((acc, c) => acc + (c.suma ?? 0), 0);
+  const totalGastos = resumen.reduce((acc, c) => acc + (c.totalMonto ?? 0), 0);
 
   const load = async () => {
     try {
@@ -139,8 +139,8 @@ export default function EgresosDetallePage() {
           </h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {resumen.map((cat) => {
-              const maxSuma = Math.max(...resumen.map((c) => c.suma ?? 0), 1);
-              const pct = ((cat.suma ?? 0) / maxSuma) * 100;
+              const maxSuma = Math.max(...resumen.map((c) => c.totalMonto ?? 0), 1);
+              const pct = ((cat.totalMonto ?? 0) / maxSuma) * 100;
               return (
                 <div key={cat.nombreCategoria}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
@@ -148,7 +148,7 @@ export default function EgresosDetallePage() {
                       {cat.nombreCategoria}
                     </span>
                     <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#fb923c" }}>
-                      ${(cat.suma ?? 0).toLocaleString()}
+                      ${(cat.totalMonto ?? 0).toLocaleString()}
                     </span>
                   </div>
                   <div style={{ height: 5, borderRadius: 3, background: "rgba(255,255,255,0.08)" }}>

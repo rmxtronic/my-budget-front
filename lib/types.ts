@@ -39,5 +39,5 @@ export type EgresoDetalle = {
 
 export type SumCategoria = {
   nombreCategoria: string;
-  suma: number;
+  totalMonto: number;
 };
