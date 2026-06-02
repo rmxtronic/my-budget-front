@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
+import { useAuth } from "./AuthProvider";
 
 const ingresosLinks = [
   { href: "/ingresos/fijos", label: "Ingresos Fijos", icon: "💵" },
@@ -21,11 +22,22 @@ const mobileLinks = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { usuario, isDemo, logout } = useAuth();
   const [ingresosOpen, setIngresosOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const isIngresosActive = ingresosLinks.some((l) => pathname === l.href);
+  const displayName = usuario?.email.split("@")[0] ?? "";
+
+  const handleAuthAction = () => {
+    if (isDemo) {
+      router.push("/auth/register");
+    } else {
+      logout();
+    }
+  };
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -134,6 +146,24 @@ export default function Navbar() {
           })}
         </div>
 
+        {/* Desktop user section (visible only >=md) */}
+        {usuario && (
+          <div className="hidden md:flex items-center gap-3 ml-auto">
+            <span className="text-sm text-white/70">{displayName}</span>
+            {isDemo && (
+              <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold tracking-wider">
+                DEMO
+              </span>
+            )}
+            <button
+              onClick={handleAuthAction}
+              className="text-sm text-white/60 hover:text-violet-300 transition-colors px-2 py-1 rounded hover:bg-white/5"
+            >
+              {isDemo ? "Crear cuenta" : "Salir"}
+            </button>
+          </div>
+        )}
+
         {/* Mobile hamburger (visible only <md) */}
         <button
           onClick={() => setMobileOpen((v) => !v)}
@@ -175,6 +205,28 @@ export default function Navbar() {
                 </Link>
               );
             })}
+
+            {usuario && (
+              <div className="border-t border-white/10 mt-2 pt-3 px-4 pb-2 flex items-center justify-between">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-sm text-white/70 truncate">{displayName}</span>
+                  {isDemo && (
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold tracking-wider shrink-0">
+                      DEMO
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={() => {
+                    setMobileOpen(false);
+                    handleAuthAction();
+                  }}
+                  className="text-sm text-white/70 hover:text-violet-300 transition-colors px-3 py-1 rounded hover:bg-white/5 shrink-0"
+                >
+                  {isDemo ? "Crear cuenta" : "Salir"}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
