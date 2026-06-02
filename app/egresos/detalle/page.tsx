@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { api } from "../../../lib/api";
 import type { EgresoCategoria, EgresoDetalle, SumCategoria } from "../../../lib/types";
 import { useToast, ToastContainer } from "../../../components/useToast";
+import { useAuth } from "../../../components/AuthProvider";
+import DemoBanner from "../../../components/DemoBanner";
 
 function barColor(pct: number): string {
   if (pct >= 90) return "#ef4444";
@@ -26,6 +28,7 @@ export default function EgresosDetallePage() {
   const [idCategoria, setIdCategoria] = useState<string>("");
 
   const { toasts, showToast } = useToast();
+  const { isDemo } = useAuth();
 
   const totalGastos = resumen.reduce((acc, c) => acc + (c.totalMonto ?? 0), 0);
 
@@ -198,7 +201,8 @@ export default function EgresosDetallePage() {
         </div>
       )}
 
-      {/* Form */}
+      {/* Form or Demo Banner */}
+      {isDemo ? <DemoBanner /> : (
       <div className="glass-form p-6 mb-8 animate-fade-in" style={{ animationDelay: "0.1s" }}>
         <h2 className="font-semibold mb-5" style={{ fontSize: "1.1rem", color: "rgba(255,255,255,0.85)" }}>
           {editandoId
@@ -286,6 +290,7 @@ export default function EgresosDetallePage() {
           </form>
         )}
       </div>
+      )}
 
       {/* List */}
       {loading ? (
@@ -346,8 +351,7 @@ export default function EgresosDetallePage() {
                 </div>
               </div>
 
-              {/* Editar/Eliminar solo si el backend retorna id */}
-              {det.id ? (
+              {!isDemo && (det.id ? (
                 <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                   <button className="btn-warning" onClick={() => editar(det)}>Editar</button>
                   <button className="btn-danger" onClick={() => eliminar(det.id!)}>Eliminar</button>
@@ -356,7 +360,7 @@ export default function EgresosDetallePage() {
                 <span style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.2)", flexShrink: 0 }}>
                   solo lectura
                 </span>
-              )}
+              ))}
             </div>
           ))}
         </div>

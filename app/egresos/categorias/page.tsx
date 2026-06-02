@@ -5,6 +5,8 @@ import { api } from "../../../lib/api";
 import type { EgresoCategoria } from "../../../lib/types";
 import { useToast, ToastContainer } from "../../../components/useToast";
 import { useAnimatedNumber } from "../../../lib/useAnimatedNumber";
+import { useAuth } from "../../../components/AuthProvider";
+import DemoBanner from "../../../components/DemoBanner";
 
 export default function EgresosCategorias() {
   const [categorias, setCategorias] = useState<EgresoCategoria[]>([]);
@@ -17,6 +19,7 @@ export default function EgresosCategorias() {
   const [fija, setFija] = useState(true);
 
   const { toasts, showToast } = useToast();
+  const { isDemo } = useAuth();
 
   const totalPresupuestado = categorias.reduce((acc, c) => acc + c.montoPresupuestado, 0);
   const animTotal = useAnimatedNumber(totalPresupuestado);
@@ -115,7 +118,8 @@ export default function EgresosCategorias() {
         </div>
       </div>
 
-      {/* Form */}
+      {/* Form or Demo Banner */}
+      {isDemo ? <DemoBanner /> : (
       <div className="glass-form p-6 mb-8 animate-fade-in" style={{ animationDelay: "0.1s" }}>
         <h2 className="font-semibold mb-5" style={{ fontSize: "1.1rem", color: "rgba(255,255,255,0.85)" }}>
           {editandoId
@@ -205,6 +209,7 @@ export default function EgresosCategorias() {
           </div>
         </form>
       </div>
+      )}
 
       {/* List */}
       {loading ? (
@@ -269,10 +274,12 @@ export default function EgresosCategorias() {
                   </p>
                 </div>
               </div>
-              <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                <button className="btn-warning" onClick={() => editar(cat)}>Editar</button>
-                <button className="btn-danger" onClick={() => eliminar(cat.id)}>Eliminar</button>
-              </div>
+              {!isDemo && (
+                <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                  <button className="btn-warning" onClick={() => editar(cat)}>Editar</button>
+                  <button className="btn-danger" onClick={() => eliminar(cat.id)}>Eliminar</button>
+                </div>
+              )}
             </div>
           ))}
         </div>

@@ -5,6 +5,8 @@ import { api } from "../../../lib/api";
 import type { PageResponse, IngresoFijo } from "../../../lib/types";
 import { useToast, ToastContainer } from "../../../components/useToast";
 import { useAnimatedNumber } from "../../../lib/useAnimatedNumber";
+import { useAuth } from "../../../components/AuthProvider";
+import DemoBanner from "../../../components/DemoBanner";
 
 export default function IngresosFijosPage() {
   const [ingresos, setIngresos] = useState<IngresoFijo[]>([]);
@@ -20,6 +22,7 @@ export default function IngresosFijosPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const { toasts, showToast } = useToast();
+  const { isDemo } = useAuth();
 
   const totalCantidad = ingresos.reduce((acc, i) => acc + i.cantidad, 0);
   const animTotal = useAnimatedNumber(totalCantidad);
@@ -34,8 +37,8 @@ export default function IngresosFijosPage() {
       setIngresos(
         data.content.map((i: any) => ({
           id: i.id,
-          nombre: i.nombreIngreFi,
-          cantidad: i.montoPresupuestado,
+          nombre: i.nombre ?? i.nombreIngreFi,
+          cantidad: i.cantidad ?? i.montoPresupuestado,
           fecha: i.fecha,
         }))
       );
@@ -123,7 +126,8 @@ export default function IngresosFijosPage() {
         </div>
       </div>
 
-      {/* Form */}
+      {/* Form or Demo Banner */}
+      {isDemo ? <DemoBanner /> : (
       <div className="glass-form p-6 mb-8 animate-fade-in" style={{ animationDelay: "0.1s" }}>
         <h2 className="font-semibold mb-5" style={{ fontSize: "1.1rem", color: "rgba(255,255,255,0.85)" }}>
           {editandoId
@@ -185,6 +189,7 @@ export default function IngresosFijosPage() {
           </div>
         </form>
       </div>
+      )}
 
       {/* List */}
       {loading ? (
@@ -240,10 +245,12 @@ export default function IngresosFijosPage() {
                     )}
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                  <button className="btn-warning" onClick={() => editar(ing)}>Editar</button>
-                  <button className="btn-danger" onClick={() => eliminar(ing.id)}>Eliminar</button>
-                </div>
+                {!isDemo && (
+                  <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                    <button className="btn-warning" onClick={() => editar(ing)}>Editar</button>
+                    <button className="btn-danger" onClick={() => eliminar(ing.id)}>Eliminar</button>
+                  </div>
+                )}
               </div>
             ))}
           </div>

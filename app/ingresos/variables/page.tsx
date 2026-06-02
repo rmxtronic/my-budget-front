@@ -5,6 +5,8 @@ import { api } from "../../../lib/api";
 import type { PageResponse, IngresoVariable } from "../../../lib/types";
 import { useToast, ToastContainer } from "../../../components/useToast";
 import { useAnimatedNumber } from "../../../lib/useAnimatedNumber";
+import { useAuth } from "../../../components/AuthProvider";
+import DemoBanner from "../../../components/DemoBanner";
 
 export default function IngresosVariablesPage() {
   const [ingresos, setIngresos] = useState<IngresoVariable[]>([]);
@@ -20,6 +22,7 @@ export default function IngresosVariablesPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const { toasts, showToast } = useToast();
+  const { isDemo } = useAuth();
 
   const totalCantidad = ingresos.reduce((acc, i) => acc + i.cantidad, 0);
   const animTotal = useAnimatedNumber(totalCantidad);
@@ -116,7 +119,8 @@ export default function IngresosVariablesPage() {
         </div>
       </div>
 
-      {/* Form */}
+      {/* Form or Demo Banner */}
+      {isDemo ? <DemoBanner /> : (
       <div className="glass-form p-6 mb-8 animate-fade-in" style={{ animationDelay: "0.1s" }}>
         <h2 className="font-semibold mb-5" style={{ fontSize: "1.1rem", color: "rgba(255,255,255,0.85)" }}>
           {editandoId
@@ -178,6 +182,7 @@ export default function IngresosVariablesPage() {
           </div>
         </form>
       </div>
+      )}
 
       {/* List */}
       {loading ? (
@@ -233,10 +238,12 @@ export default function IngresosVariablesPage() {
                     )}
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                  <button className="btn-warning" onClick={() => editar(ing)}>Editar</button>
-                  <button className="btn-danger" onClick={() => eliminar(ing.id)}>Eliminar</button>
-                </div>
+                {!isDemo && (
+                  <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                    <button className="btn-warning" onClick={() => editar(ing)}>Editar</button>
+                    <button className="btn-danger" onClick={() => eliminar(ing.id)}>Eliminar</button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
