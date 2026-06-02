@@ -1,16 +1,26 @@
+import { getToken, clearToken } from "./auth";
+
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  // Auth: quando implementar autenticação, adicionar o token aqui:
-  // const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const isAuthEndpoint = path.startsWith("/api/auth/");
+  const token = !isAuthEndpoint ? getToken() : null;
+
   const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
-      // ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options?.headers,
     },
   });
+
+  if ((res.status === 401 || res.status === 403) && !isAuthEndpoint) {
+    if (typeof window !== "undefined") {
+      clearToken();
+      window.location.assign("/auth/login");
+    }
+  }
 
   if (res.status === 204) return null as T;
 

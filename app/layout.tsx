@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "../components/Navbar";
+import { AuthProvider } from "../components/AuthProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,19 +27,21 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <div className="bg-animated" style={{ minHeight: "100vh", position: "relative", overflow: "hidden" }}>
-          {/* Background orbs */}
-          <div className="orb" style={{ width: 500, height: 500, background: "#7c3aed", top: -100, left: -150 }} />
-          <div className="orb" style={{ width: 400, height: 400, background: "#2563eb", bottom: 100, right: -100 }} />
-          <div className="orb" style={{ width: 300, height: 300, background: "#ec4899", top: "40%", right: "20%" }} />
+        <AuthProvider>
+          <div className="bg-animated" style={{ minHeight: "100vh", position: "relative", overflow: "hidden" }}>
+            {/* Background orbs */}
+            <div className="orb" style={{ width: 500, height: 500, background: "#7c3aed", top: -100, left: -150 }} />
+            <div className="orb" style={{ width: 400, height: 400, background: "#2563eb", bottom: 100, right: -100 }} />
+            <div className="orb" style={{ width: 300, height: 300, background: "#ec4899", top: "40%", right: "20%" }} />
 
-          {/* TODO: quando implementar auth, criar layout separado para /auth/* sem Navbar */}
-          <Navbar />
+            {/* TODO Phase 2: Navbar should hide on /auth/* routes */}
+            <Navbar />
 
-          <main style={{ position: "relative", zIndex: 10 }}>
-            {children}
-          </main>
-        </div>
+            <main style={{ position: "relative", zIndex: 10 }}>
+              {children}
+            </main>
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );
