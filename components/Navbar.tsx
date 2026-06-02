@@ -41,6 +41,8 @@ export default function Navbar() {
     setMobileOpen(false);
   }, [pathname]);
 
+  if (pathname?.startsWith("/auth/")) return null;
+
   return (
     <nav className="sticky top-0 z-[100] border-b border-white/[0.08] backdrop-blur-[20px] bg-[rgba(15,12,41,0.92)]">
       <div className="max-w-[1100px] mx-auto px-4 flex items-center gap-1">
