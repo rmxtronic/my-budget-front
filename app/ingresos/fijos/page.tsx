@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { api } from "../../../lib/api";
 import type { PageResponse, IngresoFijo } from "../../../lib/types";
 import { useToast, ToastContainer } from "../../../components/useToast";
@@ -95,6 +96,22 @@ export default function IngresosFijosPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
+      {/* Back to dashboard */}
+      <Link
+        href="/"
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          color: "rgba(255,255,255,0.45)",
+          fontSize: "0.85rem",
+          textDecoration: "none",
+          marginBottom: 16,
+        }}
+      >
+        ← Volver al dashboard
+      </Link>
+
       {/* Header */}
       <div className="text-center mb-10 animate-fade-in">
         <div className="float-icon text-5xl mb-3">💵</div>

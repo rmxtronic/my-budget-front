@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { api } from "../lib/api";
 import type { SumCategoria, EgresoCategoria } from "../lib/types";
 import { useToast, ToastContainer } from "../components/useToast";
 import { useAnimatedNumber } from "../lib/useAnimatedNumber";
+import { useAuth } from "../components/AuthProvider";
 
 function barColor(pct: number): string {
   if (pct >= 90) return "#ef4444";
@@ -21,6 +24,18 @@ export default function Dashboard() {
   const [presupuestos, setPresupuestos] = useState<EgresoCategoria[]>([]);
   const [loading, setLoading] = useState(true);
   const { toasts, showToast } = useToast();
+  const { usuario, isDemo, logout } = useAuth();
+  const router = useRouter();
+
+  const displayName = usuario?.email.split("@")[0] ?? "";
+
+  const handleAuthAction = () => {
+    if (isDemo) {
+      router.push("/auth/register");
+    } else {
+      logout();
+    }
+  };
 
   const totalIngresos = totalFijos + totalVariables;
   const gastosReales = categorias.reduce((sum, c) => sum + (c.totalMonto ?? 0), 0);
@@ -58,6 +73,65 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">
+      {/* User bar (replaces Navbar) */}
+      {usuario && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            gap: 12,
+            marginBottom: 16,
+            flexWrap: "wrap",
+          }}
+        >
+          <span style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.7)" }}>
+            {displayName}
+          </span>
+          {isDemo && (
+            <span
+              style={{
+                fontSize: "0.65rem",
+                padding: "2px 8px",
+                borderRadius: 4,
+                background: "rgba(245, 158, 11, 0.2)",
+                color: "rgb(252, 211, 77)",
+                border: "1px solid rgba(245, 158, 11, 0.3)",
+                fontWeight: 600,
+                letterSpacing: "0.05em",
+              }}
+            >
+              DEMO
+            </span>
+          )}
+          <button
+            onClick={handleAuthAction}
+            style={{
+              background: "transparent",
+              border: "1px solid rgba(255,255,255,0.12)",
+              color: "rgba(255,255,255,0.7)",
+              cursor: "pointer",
+              fontSize: "0.85rem",
+              padding: "5px 12px",
+              borderRadius: 6,
+              transition: "all 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "rgb(196, 181, 253)";
+              e.currentTarget.style.borderColor = "rgba(167, 139, 250, 0.4)";
+              e.currentTarget.style.background = "rgba(139, 92, 246, 0.1)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "rgba(255,255,255,0.7)";
+              e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)";
+              e.currentTarget.style.background = "transparent";
+            }}
+          >
+            {isDemo ? "Crear cuenta" : "Salir"}
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="text-center mb-10 animate-fade-in">
         <div className="float-icon text-5xl mb-3">📊</div>
@@ -81,18 +155,39 @@ export default function Dashboard() {
         </div>
       ) : (
         <>
-          {/* Stats 2x2 */}
+          {/* Stats 2x2 — clickable navigation entry points */}
           <div
             className="grid gap-4 mb-4 animate-fade-in"
             style={{ gridTemplateColumns: "repeat(2, 1fr)" }}
           >
-            <StatCard label="Ingresos Fijos" value={animFijos} color="#a78bfa" glow />
-            <StatCard label="Ingresos Variables" value={animVariables} color="#34d399" />
-            <StatCard label="Presupuestado" value={animPresupuestado} color="#f472b6" />
-            <StatCard label="Gastos Reales" value={animGastos} color="#fb923c" />
+            <StatCard
+              label="Ingresos Fijos"
+              value={animFijos}
+              color="#a78bfa"
+              glow
+              href="/ingresos/fijos"
+            />
+            <StatCard
+              label="Ingresos Variables"
+              value={animVariables}
+              color="#34d399"
+              href="/ingresos/variables"
+            />
+            <StatCard
+              label="Presupuestado"
+              value={animPresupuestado}
+              color="#f472b6"
+              href="/egresos/categorias"
+            />
+            <StatCard
+              label="Gastos Reales"
+              value={animGastos}
+              color="#fb923c"
+              href="/egresos/detalle"
+            />
           </div>
 
-          {/* Saldo full-width */}
+          {/* Saldo full-width — derived metric, not clickable */}
           <div
             className={`glass p-6 text-center mb-8 animate-fade-in ${saldo >= 0 ? "glow-pulse" : ""}`}
             style={{
@@ -124,7 +219,7 @@ export default function Dashboard() {
         </>
       )}
 
-      {/* Category breakdown */}
+      {/* Category breakdown — each row is a link to detalle */}
       {!loading && categorias.length > 0 && (
         <div className="glass-form p-6 animate-fade-in">
           <h2
@@ -145,7 +240,25 @@ export default function Dashboard() {
               const excedido = Math.max(0, gastado - presupuestado);
               const saldoCat = presupuestado - gastado;
               return (
-                <div key={cat.nombreCategoria}>
+                <Link
+                  key={cat.nombreCategoria}
+                  href="/egresos/detalle"
+                  style={{
+                    textDecoration: "none",
+                    color: "inherit",
+                    display: "block",
+                    padding: "4px 8px",
+                    margin: "-4px -8px",
+                    borderRadius: 8,
+                    transition: "background 0.2s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "rgba(255,255,255,0.03)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "transparent";
+                  }}
+                >
                   <div
                     style={{
                       display: "flex",
@@ -192,7 +305,7 @@ export default function Dashboard() {
                         ? `Excedido por $${excedido.toLocaleString()} (${Math.round(pct)}%)`
                         : `${Math.round(pct)}% — Saldo: $${saldoCat.toLocaleString()}`}
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>
@@ -229,14 +342,18 @@ function StatCard({
   value,
   color,
   glow,
+  href,
 }: {
   label: string;
   value: number;
   color: string;
   glow?: boolean;
+  href?: string;
 }) {
-  return (
-    <div className={`glass p-5 text-center ${glow ? "glow-pulse" : ""}`}>
+  const cardClass = `glass p-5 text-center ${glow ? "glow-pulse" : ""}`;
+
+  const content = (
+    <>
       <p
         style={{
           color: "rgba(255,255,255,0.5)",
@@ -251,6 +368,53 @@ function StatCard({
       <p className="font-bold count-animate" style={{ fontSize: "1.8rem", color }}>
         ${value.toLocaleString()}
       </p>
+      {href && (
+        <span
+          style={{
+            position: "absolute",
+            top: 12,
+            right: 14,
+            color: "rgba(255,255,255,0.25)",
+            fontSize: "0.9rem",
+          }}
+          aria-hidden="true"
+        >
+          →
+        </span>
+      )}
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className={cardClass}
+        style={{
+          position: "relative",
+          display: "block",
+          textDecoration: "none",
+          color: "inherit",
+          cursor: "pointer",
+          transition: "transform 0.2s, box-shadow 0.2s",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "translateY(-3px)";
+          e.currentTarget.style.boxShadow = `0 12px 40px ${color}33`;
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "translateY(0)";
+          e.currentTarget.style.boxShadow = "";
+        }}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <div className={cardClass} style={{ position: "relative" }}>
+      {content}
     </div>
   );
 }

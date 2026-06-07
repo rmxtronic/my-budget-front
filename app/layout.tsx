@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "../components/Navbar";
 import { AuthProvider } from "../components/AuthProvider";
 
 const geistSans = Geist({
@@ -33,9 +32,6 @@ export default function RootLayout({
             <div className="orb" style={{ width: 500, height: 500, background: "#7c3aed", top: -100, left: -150 }} />
             <div className="orb" style={{ width: 400, height: 400, background: "#2563eb", bottom: 100, right: -100 }} />
             <div className="orb" style={{ width: 300, height: 300, background: "#ec4899", top: "40%", right: "20%" }} />
-
-            {/* TODO Phase 2: Navbar should hide on /auth/* routes */}
-            <Navbar />
 
             <main style={{ position: "relative", zIndex: 10 }}>
               {children}
